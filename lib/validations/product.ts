@@ -7,7 +7,7 @@ export const productCreateSchema = z.object({
     .optional()
     .transform((s) => (s?.trim() || undefined)),
   price: z
-    .number({ invalid_type_error: "Valid price (≥ 0) is required." })
+    .number({ error: "Valid price (≥ 0) is required." })
     .min(0, "Valid price (≥ 0) is required."),
   category: z
     .string()
