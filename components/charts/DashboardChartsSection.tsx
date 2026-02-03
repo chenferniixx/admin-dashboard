@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { User } from "@/types/user";
 import type { Product } from "@/types/product";
@@ -20,6 +21,10 @@ const ProductsByCategoryBarChart = dynamic(
   { ssr: false }
 );
 
+/**
+ * Aggregate users by role for chart display
+ * @see js-combine-iterations - Single iteration through users
+ */
 function aggregateUsersByRole(users: User[]): { name: string; value: number }[] {
   const roleOrder = ["admin", "editor", "viewer"] as const;
   const counts: Record<string, number> = { admin: 0, editor: 0, viewer: 0 };
@@ -33,6 +38,11 @@ function aggregateUsersByRole(users: User[]): { name: string; value: number }[] 
   }));
 }
 
+/**
+ * Aggregate products by category for chart display
+ * @see js-index-maps - Use Map for O(1) category lookups
+ * @see js-tosorted-immutable - Use toSorted() for immutability
+ */
 function aggregateProductsByCategory(
   products: Product[]
 ): { name: string; value: number }[] {
@@ -41,20 +51,25 @@ function aggregateProductsByCategory(
     const cat = p.category?.trim() || "Uncategorized";
     map.set(cat, (map.get(cat) ?? 0) + 1);
   }
+  // Use toSorted() for immutability - prevents mutation bugs in React state
   return Array.from(map.entries())
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+    .toSorted((a, b) => b.value - a.value);
 }
 
+/**
+ * Format relative time for display
+ * @see js-early-exit - Return early when result is determined
+ */
 function formatRelativeTime(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
   if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHours = Math.floor(diffMs / 3600000);
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  const diffDays = Math.floor(diffMs / 86400000);
   return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
 }
 
@@ -67,19 +82,31 @@ export interface DashboardChartsSectionProps {
 
 /**
  * Client-only section: ECharts (line mock, donut from users, bar from products) + recent activity from data.
+ * @see rerender-memo - Wrapped in memo to prevent unnecessary re-renders
  */
-export function DashboardChartsSection({
+export const DashboardChartsSection = memo(function DashboardChartsSection({
   users = [],
   products = [],
 }: DashboardChartsSectionProps) {
-  const usersByRole = aggregateUsersByRole(users);
-  const productsByCategory = aggregateProductsByCategory(products);
-  const recentProducts = [...products]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-    .slice(0, 5);
+  /**
+   * Memoize derived data to avoid recalculation on parent re-renders
+   * @see rerender-derived-state - Calculate derived state during rendering, not in effects
+   */
+  const usersByRole = useMemo(() => aggregateUsersByRole(users), [users]);
+  const productsByCategory = useMemo(() => aggregateProductsByCategory(products), [products]);
+  
+  // Use toSorted() for immutability - avoids mutating props
+  // @see js-tosorted-immutable
+  const recentProducts = useMemo(
+    () =>
+      products
+        .toSorted(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        )
+        .slice(0, 5),
+    [products]
+  );
 
   return (
     <>
@@ -152,4 +179,4 @@ export function DashboardChartsSection({
       </div>
     </>
   );
-}
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 
 export interface ProductsByCategoryBarChartProps {
@@ -9,13 +10,20 @@ export interface ProductsByCategoryBarChartProps {
 
 /**
  * Bar chart: products count by category (dynamic from API).
+ * @see rerender-memo - Wrapped in memo to prevent unnecessary re-renders
  */
-export function ProductsByCategoryBarChart({ data }: ProductsByCategoryBarChartProps) {
-  const hasData = data.length > 0;
-  const categories = hasData ? data.map((d) => d.name) : ["No data"];
-  const values = hasData ? data.map((d) => d.value) : [0];
+export const ProductsByCategoryBarChart = memo(function ProductsByCategoryBarChart({ data }: ProductsByCategoryBarChartProps) {
+  // Memoize derived values to avoid recalculation on parent re-renders
+  const { categories, values } = useMemo(() => {
+    const hasData = data.length > 0;
+    return {
+      categories: hasData ? data.map((d) => d.name) : ["No data"],
+      values: hasData ? data.map((d) => d.value) : [0],
+    };
+  }, [data]);
 
-  const option = {
+  // Memoize option object to prevent ECharts from re-rendering unnecessarily
+  const option = useMemo(() => ({
     tooltip: {
       trigger: "axis",
       backgroundColor: "rgba(255,255,255,0.95)",
@@ -62,7 +70,7 @@ export function ProductsByCategoryBarChart({ data }: ProductsByCategoryBarChartP
         barWidth: "50%",
       },
     ],
-  };
+  }), [categories, values]);
 
   return (
     <ReactECharts
@@ -72,4 +80,4 @@ export function ProductsByCategoryBarChart({ data }: ProductsByCategoryBarChartP
       notMerge
     />
   );
-}
+});

@@ -52,6 +52,7 @@ export function Dialog({
       aria-modal="true"
       aria-labelledby="dialog-title"
       aria-describedby={description ? "dialog-desc" : undefined}
+      style={{ overscrollBehavior: "contain" }}
     >
       <button
         type="button"

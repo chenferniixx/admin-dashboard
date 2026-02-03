@@ -91,6 +91,8 @@ export function UserFormModal({
             <Label htmlFor="user-name">Name</Label>
             <Input
               id="user-name"
+              name="name"
+              autoComplete="name"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               disabled={isLoading}
@@ -116,7 +118,10 @@ export function UserFormModal({
             <Label htmlFor="user-email">Email</Label>
             <Input
               id="user-email"
+              name="email"
               type="email"
+              autoComplete="email"
+              spellCheck={false}
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               disabled={isLoading || mode === "edit"}
@@ -147,6 +152,7 @@ export function UserFormModal({
             <Label htmlFor="user-role">Role</Label>
             <select
               id="user-role"
+              name="role"
               value={form.role ?? ""}
               onChange={(e) =>
                 setForm((f) => ({

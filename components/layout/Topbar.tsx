@@ -161,7 +161,7 @@ export function Topbar() {
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                     role="menuitem"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4" aria-hidden />
                     Sign out
                   </button>
                 </div>

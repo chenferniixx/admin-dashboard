@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Package, TrendingUp, Layers } from "lucide-react";
 import { fetchUsersList } from "@/lib/api/users";
@@ -53,13 +54,27 @@ export function DashboardContent() {
   const isError = usersQuery.isError || productsQuery.isError;
   const error = usersQuery.error ?? productsQuery.error;
 
+  /**
+   * Derive values during render, not in effects
+   * @see rerender-derived-state - Calculate derived state during rendering
+   */
   const totalUsers = usersQuery.data?.total ?? 0;
   const totalProducts = productsQuery.data?.total ?? 0;
   const productsList = productsQuery.data?.data ?? [];
-  const revenue = productsList.reduce((sum, p) => sum + (p.price ?? 0), 0);
-  const categoryCount = new Set(
-    productsList.map((p) => (p.category?.trim() || "Uncategorized"))
-  ).size;
+
+  /**
+   * Memoize expensive calculations to avoid recalculation on unrelated state changes
+   * @see js-combine-iterations - Single iteration through products for revenue
+   */
+  const { revenue, categoryCount } = useMemo(() => {
+    let rev = 0;
+    const categories = new Set<string>();
+    for (const p of productsList) {
+      rev += p.price ?? 0;
+      categories.add(p.category?.trim() || "Uncategorized");
+    }
+    return { revenue: rev, categoryCount: categories.size };
+  }, [productsList]);
 
   const kpis = [
     {

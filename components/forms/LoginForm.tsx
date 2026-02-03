@@ -18,6 +18,12 @@ import {
 const EMAIL_MIN_LENGTH = 1;
 const PASSWORD_MIN_LENGTH = 6;
 
+/**
+ * Hoisted RegExp for email validation
+ * @see js-hoist-regexp - Hoist RegExp creation to avoid recreation on each call
+ */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 type FormErrors = { email?: string; password?: string; submit?: string };
 
 function validateForm(email: string, password: string): FormErrors {
@@ -25,7 +31,7 @@ function validateForm(email: string, password: string): FormErrors {
   const trimmedEmail = email.trim().toLowerCase();
   if (!trimmedEmail) {
     errors.email = "Email is required.";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+  } else if (!EMAIL_REGEX.test(trimmedEmail)) {
     errors.email = "Please enter a valid email address.";
   }
   if (!password) {
@@ -120,9 +126,11 @@ export function LoginForm() {
             <Label htmlFor="login-email">Email</Label>
             <Input
               id="login-email"
+              name="email"
               type="email"
               autoComplete="email"
               placeholder="admin@example.com"
+              spellCheck={false}
               value={email}
               onChange={handleEmailChange}
               disabled={isLoading}
@@ -148,6 +156,7 @@ export function LoginForm() {
             <Label htmlFor="login-password">Password</Label>
             <Input
               id="login-password"
+              name="password"
               type="password"
               autoComplete="current-password"
               placeholder="••••••••"

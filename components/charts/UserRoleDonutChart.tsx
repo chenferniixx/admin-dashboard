@@ -1,8 +1,14 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b"];
+
+/**
+ * Hoisted fallback data - avoids recreation on each render
+ * @see rerender-memo-with-default-value
+ */
 const FALLBACK_DATA = [
   { name: "Admin", value: 0 },
   { name: "Editor", value: 0 },
@@ -16,17 +22,22 @@ export interface UserRoleDonutChartProps {
 
 /**
  * Donut chart: users by role (dynamic from API or fallback).
+ * @see rerender-memo - Wrapped in memo to prevent unnecessary re-renders
  */
-export function UserRoleDonutChart({ data }: UserRoleDonutChartProps) {
-  const chartData =
-    data && data.length > 0
-      ? data.map((d, i) => ({ ...d, itemStyle: { color: COLORS[i % COLORS.length] } }))
-      : FALLBACK_DATA.map((d, i) => ({
-          ...d,
-          itemStyle: { color: COLORS[i] },
-        }));
+export const UserRoleDonutChart = memo(function UserRoleDonutChart({ data }: UserRoleDonutChartProps) {
+  // Memoize chart data transformation to avoid recalculation on parent re-renders
+  const chartData = useMemo(() => {
+    if (data && data.length > 0) {
+      return data.map((d, i) => ({ ...d, itemStyle: { color: COLORS[i % COLORS.length] } }));
+    }
+    return FALLBACK_DATA.map((d, i) => ({
+      ...d,
+      itemStyle: { color: COLORS[i] },
+    }));
+  }, [data]);
 
-  const option = {
+  // Memoize option object to prevent ECharts from re-rendering unnecessarily
+  const option = useMemo(() => ({
     tooltip: {
       trigger: "item",
       backgroundColor: "rgba(255,255,255,0.95)",
@@ -59,7 +70,7 @@ export function UserRoleDonutChart({ data }: UserRoleDonutChartProps) {
         data: chartData,
       },
     ],
-  };
+  }), [chartData]);
 
   return (
     <ReactECharts
@@ -69,4 +80,4 @@ export function UserRoleDonutChart({ data }: UserRoleDonutChartProps) {
       notMerge
     />
   );
-}
+});

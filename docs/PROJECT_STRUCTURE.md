@@ -119,8 +119,46 @@ admin-dashboard/
 
 ---
 
-## 6. สรุประดับ Mid–Senior
+## 6. Performance Optimizations (Vercel React Best Practices)
+
+โปรเจกต์นี้ได้ปรับปรุงตามแนวทาง **Vercel React Best Practices** ดังนี้:
+
+### 6.1 Bundle Size Optimization (CRITICAL)
+
+| Pattern | ไฟล์ | รายละเอียด |
+|---------|------|------------|
+| `optimizePackageImports` | `next.config.ts` | เพิ่ม `lucide-react`, `echarts-for-react`, `@tanstack/react-query` ใน experimental config เพื่อลด bundle size |
+
+### 6.2 JavaScript Performance (LOW-MEDIUM)
+
+| Pattern | ไฟล์ | รายละเอียด |
+|---------|------|------------|
+| `js-hoist-regexp` | `api/users/route.ts`, `LoginForm.tsx` | Hoist RegExp (EMAIL_REGEX) ออกนอก function เพื่อหลีกเลี่ยงการสร้างใหม่ทุก request |
+| `js-tosorted-immutable` | `DashboardChartsSection.tsx` | ใช้ `toSorted()` แทน `sort()` เพื่อป้องกัน mutation bugs |
+| `js-combine-iterations` | `DashboardContent.tsx`, `DashboardChartsSection.tsx` | รวม iterations ใน loop เดียว (revenue + categoryCount) |
+| `js-index-maps` | `DashboardChartsSection.tsx` | ใช้ Map สำหรับ aggregation แทน repeated lookups |
+| `js-early-exit` | `DashboardChartsSection.tsx` | Return early ใน `formatRelativeTime()` |
+
+### 6.3 Re-render Optimization (MEDIUM)
+
+| Pattern | ไฟล์ | รายละเอียด |
+|---------|------|------------|
+| `rerender-memo` | Charts components | Wrap ด้วย `React.memo()` เพื่อป้องกัน unnecessary re-renders |
+| `rerender-derived-state` | `DashboardContent.tsx` | คำนวณ derived state (revenue, categoryCount) ด้วย `useMemo()` |
+| `rendering-hoist-jsx` | `RevenueLineChart.tsx`, `SignupsBarChart.tsx` | Hoist static option config ออกนอก component |
+
+### 6.4 Rendering Performance (MEDIUM)
+
+| Pattern | ไฟล์ | รายละเอียด |
+|---------|------|------------|
+| `bundle-dynamic-imports` | `DashboardChartsSection.tsx` | ใช้ `next/dynamic` สำหรับ chart components (SSR: false) |
+| `rendering-conditional-render` | ทุก component | ใช้ ternary operator แทน `&&` สำหรับ conditional rendering ที่มี potential falsy values |
+
+---
+
+## 7. สรุประดับ Mid–Senior
 
 - **โครงสร้างและแยก component:** อยู่ในระดับ **mid–senior** — แยก app / components / hooks / lib / types / store ชัดเจน; feature colocation สำหรับ modals; reusable table และ layout.
 - **Data flow และ stack:** ใช้ Next.js 14+, React Query, Zustand, NextAuth, Zod ตรงกับแนวทางที่ใช้ใน production.
-- **Improvements ครบ:** มี constants, custom hooks (useUsers, useProducts), Error Boundary, README, จัดการ dead code, และ form validation แยกใน lib/validations — พร้อมนำเสนอตอนสัมภาษณ์ได้ครบถ้วน.
+- **Improvements ครบ:** มี constants, custom hooks (useUsers, useProducts), Error Boundary, README, จัดการ dead code, และ form validation แยกใน lib/validations.
+- **Performance Optimizations:** ปรับปรุงตาม Vercel React Best Practices — optimizePackageImports, React.memo, useMemo, hoisted static config, toSorted() immutability — พร้อมนำเสนอตอนสัมภาษณ์ได้ครบถ้วน.

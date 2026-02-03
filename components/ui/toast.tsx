@@ -21,6 +21,7 @@ export function ToastContainer() {
       className="fixed bottom-4 right-4 z-50 flex max-w-sm flex-col gap-3"
       role="region"
       aria-label="Notifications"
+      aria-live="polite"
     >
       {toasts.map((t) => (
         <div

@@ -7,6 +7,12 @@ const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;
 
 /**
+ * Hoisted RegExp for email validation
+ * @see js-hoist-regexp - Hoist RegExp creation to avoid recreation on each request
+ */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
  * GET /api/users?page=1&limit=10&search=
  * List users with pagination and optional search.
  */
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!EMAIL_REGEX.test(email.trim())) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 }

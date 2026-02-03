@@ -91,6 +91,8 @@ export function ProductFormModal({
             <Label htmlFor="product-name">Name</Label>
             <Input
               id="product-name"
+              name="name"
+              autoComplete="off"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               disabled={isLoading}
@@ -116,6 +118,7 @@ export function ProductFormModal({
             <Label htmlFor="product-description">Description</Label>
             <textarea
               id="product-description"
+              name="description"
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value }))
@@ -129,7 +132,9 @@ export function ProductFormModal({
             <Label htmlFor="product-price">Price (฿)</Label>
             <Input
               id="product-price"
+              name="price"
               type="number"
+              inputMode="decimal"
               min={0}
               step={0.01}
               value={form.price === 0 ? "" : form.price}
@@ -162,12 +167,14 @@ export function ProductFormModal({
             <Label htmlFor="product-category">Category</Label>
             <Input
               id="product-category"
+              name="category"
+              autoComplete="off"
               value={form.category}
               onChange={(e) =>
                 setForm((f) => ({ ...f, category: e.target.value }))
               }
               disabled={isLoading}
-              placeholder="e.g. Electronics, Office"
+              placeholder="e.g. Electronics, Office…"
             />
           </div>
         </div>
